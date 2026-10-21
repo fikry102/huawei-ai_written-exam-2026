@@ -269,9 +269,9 @@ if __name__ == "__main__":
 <h3>K-Means 基础</h3><p>K-Means 将 N 个点划分为 K 个簇，目标是减小簇内误差平方和 SSE：</p><div class="formula">SSE = ∑<sub>i=1…N</sub> ‖x<sub>i</sub> − μ<sub>c(i)</sub>‖²</div><p>也就是把每个点到其所属簇中心的欧氏距离平方全部累加。</p>
 <p>每个候选 K 按下面的确定性流程运行：</p><ol><li><strong>初始化：</strong>K=1 时取全体点的逐维均值；K&gt;1 时按第一维坐标稳定升序排序，对 i=0,…,K−1，选择排序后下标 floor(i·(N−1)/(K−1)) 的点作为第 i 个中心。不得随机初始化。</li><li><strong>分配：</strong>把每个点分到欧氏距离平方最小的中心；距离相同选择编号较小的簇。</li><li><strong>更新：</strong>非空簇的中心改为簇内点的逐维均值；空簇保留原中心。</li><li><strong>停止：</strong>某轮分配得到的全部标签与上一轮一致，或已完成 100 轮时停止。即使标签不变，也要完成本轮中心更新。</li></ol>
 <h3>合并重合中心</h3><p>K-Means 结束后，若任意两个中心的距离平方小于 10⁻⁴，则把它们合并。合并具有传递性：A 与 B 接近、B 与 C 接近时，三者属于同一连通分量。合并后的中心取该分量所含全部样本的逐维均值，并重新映射标签；此时的簇数记为 K<sub>actual</sub>。</p>
-<h3>BIC（贝叶斯信息准则）</h3><p>BIC 同时衡量拟合误差与模型复杂度：</p><div class="formula">BIC = N · ln((SSE + ε) / N) + p · ln(N)<br>ε = 10⁻⁸，p = K<sub>actual</sub> · (d+1)</div>
-<table class="spec-table"><thead><tr><th>符号</th><th>含义</th></tr></thead><tbody><tr><td>N</td><td>数据点总数</td></tr><tr><td>SSE</td><td>所有点到最终所属中心的误差平方和</td></tr><tr><td>p</td><td>K<sub>actual</sub> 个 d 维中心，加上每簇 1 个权重参数</td></tr><tr><td>K<sub>actual</sub></td><td>重合中心完成合并后的实际簇数</td></tr><tr><td>ε</td><td>固定为 10⁻⁸，避免 SSE=0 时出现 ln(0)</td></tr></tbody></table>
-<ul><li>BIC 越小越好；第一项偏好较小 SSE，第二项惩罚过多的簇。</li><li>如果多个候选 K 得到相同 BIC，选择<strong>枚举值 K 较小</strong>的方案。</li><li>所有点重合导致 SSE=0 时，仍按公式加入 ε。</li></ul>
+<h3>BIC（贝叶斯信息准则）</h3><p>BIC 同时衡量拟合误差与模型复杂度。仅当 SSE=0 时，先把 SSE 替换为 10⁻⁸，以避免出现 ln(0)；SSE&gt;0 时直接使用原值：</p><div class="formula">SSE′ = 10⁻⁸（SSE=0），否则 SSE′ = SSE<br>BIC = N · ln(SSE′ / N) + p · ln(N)<br>p = K<sub>actual</sub> · (d+1)</div>
+<table class="spec-table"><thead><tr><th>符号</th><th>含义</th></tr></thead><tbody><tr><td>N</td><td>数据点总数</td></tr><tr><td>SSE</td><td>所有点到最终所属中心的误差平方和</td></tr><tr><td>p</td><td>K<sub>actual</sub> 个 d 维中心，加上每簇 1 个权重参数</td></tr><tr><td>K<sub>actual</sub></td><td>重合中心完成合并后的实际簇数</td></tr><tr><td>SSE′</td><td>SSE 为 0 时取 10⁻⁸，否则保持原 SSE</td></tr></tbody></table>
+<ul><li>BIC 越小越好；第一项偏好较小 SSE，第二项惩罚过多的簇。</li><li>如果多个候选 K 得到相同 BIC，选择<strong>枚举值 K 较小</strong>的方案。</li><li>只有 SSE=0 时才使用 10⁻⁸；非零 SSE 不额外加 ε。</li></ul>
 <h3>X-Means 流程</h3><pre>输入：数据集 X，簇数区间 [Kmin, Kmax]
 
 先令 Kmax = min(Kmax, N)
@@ -328,6 +328,6 @@ if __name__ == "__main__":
 4.50 2.50
 21.00 11.00
 0 1 0 1 0 1 0 1</pre><div class="example-explain"><strong>样例解释：</strong>8 个点分成左右两组，均值分别为 (4.50,2.50) 与 (21.00,11.00)。K=1、2、3 时 BIC 约为 42.00、14.26、19.95，故选择 K=2；字典序编号后左侧为 0、右侧为 1。</div>
-<h2>提示</h2><table class="tip-table"><thead><tr><th>要点</th><th>说明</th></tr></thead><tbody><tr><td>确定性初始化</td><td>按第一维稳定排序并按 floor(i·(N−1)/(K−1)) 取点；K=1 取全体均值，不得随机初始化。</td></tr><tr><td>收敛条件</td><td>一轮结束后标签完全不变即收敛；最多 100 轮。</td></tr><tr><td>标签排序</td><td>输出前按中心全部坐标的字典序重新编号，保证结果唯一。</td></tr><tr><td>Kmax 截断</td><td>先执行 Kmax=min(Kmax,N)；若 Kmin&gt;Kmax，则令 Kmin=Kmax。</td></tr><tr><td>SSE 为零</td><td>BIC 使用 (SSE+1e-8)/N，避免 ln(0)。</td></tr><tr><td>空簇处理</td><td>某簇没有样本时保留原中心，不参与均值更新。</td></tr><tr><td>重合中心合并</td><td>中心距离平方 &lt;1e-4 时传递合并；合并后的中心取全部归属样本的均值。</td></tr><tr><td>Kmin=Kmax</td><td>只对这个固定 K 运行一次 K-Means，无需枚举其他值。</td></tr><tr><td>距离相同</td><td>点到多个中心等距时，选择编号最小的簇。</td></tr><tr><td>零的符号</td><td>四舍五入得到 −0.00 时输出 0.00。</td></tr></tbody></table>`
+<h2>提示</h2><table class="tip-table"><thead><tr><th>要点</th><th>说明</th></tr></thead><tbody><tr><td>确定性初始化</td><td>按第一维稳定排序并按 floor(i·(N−1)/(K−1)) 取点；K=1 取全体均值，不得随机初始化。</td></tr><tr><td>收敛条件</td><td>一轮结束后标签完全不变即收敛；最多 100 轮。</td></tr><tr><td>标签排序</td><td>输出前按中心全部坐标的字典序重新编号，保证结果唯一。</td></tr><tr><td>Kmax 截断</td><td>先执行 Kmax=min(Kmax,N)；若 Kmin&gt;Kmax，则令 Kmin=Kmax。</td></tr><tr><td>SSE 为零</td><td>仅当 SSE=0 时将其替换为 1e-8；SSE&gt;0 时直接计算 SSE/N。</td></tr><tr><td>空簇处理</td><td>某簇没有样本时保留原中心，不参与均值更新。</td></tr><tr><td>重合中心合并</td><td>中心距离平方 &lt;1e-4 时传递合并；合并后的中心取全部归属样本的均值。</td></tr><tr><td>Kmin=Kmax</td><td>只对这个固定 K 运行一次 K-Means，无需枚举其他值。</td></tr><tr><td>距离相同</td><td>点到多个中心等距时，选择编号最小的簇。</td></tr><tr><td>零的符号</td><td>四舍五入得到 −0.00 时输出 0.00。</td></tr></tbody></table>`
   }
 };

@@ -82,7 +82,9 @@ def merge_close_clusters(points, centers, labels):
 
 def calculate_bic(n, sse, k, dimension):
     parameters = k * (dimension + 1)
-    return n * math.log((sse + 1e-8) / n) + parameters * math.log(n)
+    if sse == 0:
+        sse = 1e-8
+    return n * math.log(sse / n) + parameters * math.log(n)
 
 
 def x_means(points, k_min, k_max):
