@@ -163,8 +163,8 @@ if __name__ == "__main__":
 <table class="spec-table"><thead><tr><th>特征编号</th><th>含义</th><th>取值</th></tr></thead><tbody><tr><td>0</td><td>是否 VIP 会员（含月卡）</td><td>0 表示否，1 表示是</td></tr><tr><td>1</td><td>是否买过该英雄的皮肤</td><td>0 表示否，1 表示是</td></tr><tr><td>2</td><td>是否把该英雄打上过最高段位</td><td>0 表示否，1 表示是</td></tr></tbody></table>
 <p>训练样本的类别也只有两种：0 表示不购买（不推荐），1 表示购买（推荐）。</p>
 <h2>决策树的构建规则</h2>
-<h3>熵</h3><p>对只含两类的样本集 S，记类别 0、1 的样本占比为 p₀、p₁（p₀+p₁=1），熵定义为：</p><div class="formula">H(S) = − ∑<sub>x∈{0,1}</sub> p<sub>x</sub> log₂ p<sub>x</sub></div><p>其中 p<sub>x</sub>=0 的项按 0·log₂0=0 处理。</p>
-<h3>条件熵与信息增益</h3><p>用特征 A 把 S 分成 S₀（取值为 0）与 S₁（取值为 1）。分裂后的条件熵是两棵子树熵按样本量加权平均：</p><div class="formula">H(S | A) = ∑<sub>v∈{0,1}</sub> |S<sub>v</sub>| / |S| · H(S<sub>v</sub>)<br>IG(S,A) = H(S) − H(S | A)</div>
+<h3>熵</h3><p>对只含两类的样本集 S，记类别 0、1 的样本占比为 p₀、p₁（p₀+p₁=1），熵定义为：</p><div class="formula">$$H(S)=-\\sum_{x\\in\\{0,1\\}}p_x\\log_2p_x$$</div><p>其中 p<sub>x</sub>=0 的项按 0·log₂0=0 处理。</p>
+<h3>条件熵与信息增益</h3><p>用特征 A 把 S 分成 S₀（取值为 0）与 S₁（取值为 1）。分裂后的条件熵是两棵子树熵按样本量加权平均：</p><div class="formula">$$H(S\\mid A)=\\sum_{v\\in\\{0,1\\}}\\frac{|S_v|}{|S|}H(S_v)$$$$\\operatorname{IG}(S,A)=H(S)-H(S\\mid A)$$</div>
 <h3>节点分裂</h3><p>从根节点开始递归建树。在当前节点上，对<strong>尚未出现在从根到该节点路径上</strong>的特征逐个计算信息增益，取增益最大的特征作为分裂特征；如果多个特征的增益并列最大，取编号最小者。特征值为 0 的样本进入左子树，值为 1 的进入右子树。</p><p>某个特征一旦在某条路径上用过，就不能在该路径的下层节点再次使用；但在另一条分支上仍然可用。</p>
 <h3>终止条件</h3><p>满足下列任意一条，当前节点成为叶节点：</p><ol><li>节点内所有样本的类别相同；</li><li>三个特征都已经在从根到当前节点的路径上出现；</li><li>所有尚未使用特征的信息增益都不大于 0。</li></ol><p>条件 1 的叶节点类别就是样本类别；条件 2、3 使用多数表决：类别 1 更多取 1，类别 0 更多取 0，数量相等取 0。</p>
 <h3>预测</h3><p>对一条待预测样本，从根节点出发，读取当前节点分裂特征的取值：0 走左子树，1 走右子树，直到叶节点并输出其类别。</p>
@@ -266,10 +266,10 @@ if __name__ == "__main__":
     html: `<div class="problem-head"><div class="problem-meta"><span class="source">CodeFun P5940</span><span>难度 5</span><span>300 分</span></div><h1>第3题－自动确定簇数的 X-Means 聚类</h1><a href="https://codefun2000.com/ide/P5940?pset=hw" target="_blank" rel="noreferrer">打开 CodeFun 原页面 ↗</a></div>
 <p>做用户分群、图像分割或测点归组时，往往事先不知道应该分成多少组。K-Means 需要人工给出簇数 K；X-Means 则在外层使用 BIC（贝叶斯信息准则），从候选区间中自动选择 K。</p><p>给定 N 个 d 维数据点与候选区间 [K<sub>min</sub>, K<sub>max</sub>]，请确定最优簇数，输出各簇中心以及每个点的簇标签。</p>
 <h2>算法介绍</h2>
-<h3>K-Means 基础</h3><p>K-Means 将 N 个点划分为 K 个簇，目标是减小簇内误差平方和 SSE：</p><div class="formula">SSE = ∑<sub>i=1…N</sub> ‖x<sub>i</sub> − μ<sub>c(i)</sub>‖²</div><p>也就是把每个点到其所属簇中心的欧氏距离平方全部累加。</p>
+<h3>K-Means 基础</h3><p>K-Means 将 N 个点划分为 K 个簇，目标是减小簇内误差平方和 SSE：</p><div class="formula">$$\\operatorname{SSE}=\\sum_{i=1}^{N}\\left\\|x_i-\\mu_{c(i)}\\right\\|^2$$</div><p>也就是把每个点到其所属簇中心的欧氏距离平方全部累加。</p>
 <p>每个候选 K 按下面的确定性流程运行：</p><ol><li><strong>初始化：</strong>K=1 时取全体点的逐维均值；K&gt;1 时按第一维坐标稳定升序排序，对 i=0,…,K−1，选择排序后下标 floor(i·(N−1)/(K−1)) 的点作为第 i 个中心。不得随机初始化。</li><li><strong>分配：</strong>把每个点分到欧氏距离平方最小的中心；距离相同选择编号较小的簇。</li><li><strong>更新：</strong>非空簇的中心改为簇内点的逐维均值；空簇保留原中心。</li><li><strong>停止：</strong>某轮分配得到的全部标签与上一轮一致，或已完成 100 轮时停止。即使标签不变，也要完成本轮中心更新。</li></ol>
 <h3>合并重合中心</h3><p>K-Means 结束后，若任意两个中心的距离平方小于 10⁻⁴，则把它们合并。合并具有传递性：A 与 B 接近、B 与 C 接近时，三者属于同一连通分量。合并后的中心取该分量所含全部样本的逐维均值，并重新映射标签；此时的簇数记为 K<sub>actual</sub>。</p>
-<h3>BIC（贝叶斯信息准则）</h3><p>BIC 同时衡量拟合误差与模型复杂度。仅当 SSE=0 时，先把 SSE 替换为 10⁻⁸，以避免出现 ln(0)；SSE&gt;0 时直接使用原值：</p><div class="formula">SSE′ = 10⁻⁸（SSE=0），否则 SSE′ = SSE<br>BIC = N · ln(SSE′ / N) + p · ln(N)<br>p = K<sub>actual</sub> · (d+1)</div>
+<h3>BIC（贝叶斯信息准则）</h3><p>BIC 同时衡量拟合误差与模型复杂度。仅当 SSE=0 时，先把 SSE 替换为 10⁻⁸，以避免出现 ln(0)；SSE&gt;0 时直接使用原值：</p><div class="formula">$$SSE'=\\begin{cases}10^{-8},&SSE=0\\\\SSE,&SSE>0\\end{cases}$$$$\\operatorname{BIC}=N\\ln\\left(\\frac{SSE'}{N}\\right)+p\\ln(N)$$$$p=K_{\\mathrm{actual}}(d+1)$$</div>
 <table class="spec-table"><thead><tr><th>符号</th><th>含义</th></tr></thead><tbody><tr><td>N</td><td>数据点总数</td></tr><tr><td>SSE</td><td>所有点到最终所属中心的误差平方和</td></tr><tr><td>p</td><td>K<sub>actual</sub> 个 d 维中心，加上每簇 1 个权重参数</td></tr><tr><td>K<sub>actual</sub></td><td>重合中心完成合并后的实际簇数</td></tr><tr><td>SSE′</td><td>SSE 为 0 时取 10⁻⁸，否则保持原 SSE</td></tr></tbody></table>
 <ul><li>BIC 越小越好；第一项偏好较小 SSE，第二项惩罚过多的簇。</li><li>如果多个候选 K 得到相同 BIC，选择<strong>枚举值 K 较小</strong>的方案。</li><li>只有 SSE=0 时才使用 10⁻⁸；非零 SSE 不额外加 ε。</li></ul>
 <h3>X-Means 流程</h3><pre>输入：数据集 X，簇数区间 [Kmin, Kmax]
