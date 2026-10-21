@@ -49,3 +49,13 @@ pip install numpy
 - 实际考试部分来自公开题面整理，可能与官方测试和排版存在差异；
 - 本地测试点和估算分数不代表官方评测结果；
 - 公开题目的著作权归原作者和原平台所有，页面保留原题链接。
+
+## Star History
+
+<a href="https://www.star-history.com/?repos=fikry102%2Fhuawei-ai_written-exam-2026&type=date&legend=top-left">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=fikry102/huawei-ai_written-exam-2026&type=date&theme=dark&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=fikry102/huawei-ai_written-exam-2026&type=date&legend=top-left" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=fikry102/huawei-ai_written-exam-2026&type=date&legend=top-left" />
+ </picture>
+</a>
